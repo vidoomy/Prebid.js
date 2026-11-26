@@ -194,6 +194,27 @@ describe('vidoomyBidAdapter', function() {
       expect(JSON.parse(bidRequest[0].data.eids)).to.eql(eids);
     });
 
+    it('should not send lp when params.loop is absent', function () {
+      expect(request[0].data).to.not.have.property('lp');
+      expect(request[1].data).to.not.have.property('lp');
+    });
+
+    it('should send params.loop as lp', function () {
+      [['0', '0'], [0, '0'], ['4', '4'], [12, '12'], ['999', '999']].forEach(([loop, lp]) => {
+        const bidRequest = { ...bidRequests[0], params: { ...bidRequests[0].params, loop } };
+        const req = spec.buildRequests([bidRequest], bidderRequest)[0];
+        expect(req.data.lp).to.equal(lp);
+      });
+    });
+
+    it('should not send lp when params.loop is not 1 to 3 digits', function () {
+      ['', '{{LOOP}}', 'abc', '-1', '1.5', '1000', ' 1', null, undefined, {}].forEach(loop => {
+        const bidRequest = { ...bidRequests[0], params: { ...bidRequests[0].params, loop } };
+        const req = spec.buildRequests([bidRequest], bidderRequest)[0];
+        expect(req.data).to.not.have.property('lp');
+      });
+    });
+
     it('should set the bidfloor if getFloor module is undefined but static bidfloor is present', function () {
       const request = { ...bidRequests[0], params: { bidfloor: 2.5 } };
       const req = spec.buildRequests([request], bidderRequest)[0];
