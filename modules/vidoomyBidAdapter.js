@@ -180,6 +180,14 @@ const buildRequests = (validBidRequests, bidderRequest) => {
       queryParams.gdprcs = bidderRequest.gdprConsent.consentString;
     }
 
+    // params.loop is the loop of the page view the bid is requested in, filled by the Vidoomy player
+    // from its {{LOOP}} macro. Anything but 1 to 3 digits (an unreplaced macro, another integration)
+    // is left out: the endpoint would read it as no loop anyway, and other requests keep their URL.
+    const loop = String(bid.params.loop ?? '');
+    if (/^\d{1,3}$/.test(loop)) {
+      queryParams.lp = loop;
+    }
+
     return {
       method: 'GET',
       url: ENDPOINT,
